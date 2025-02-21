@@ -1,0 +1,3 @@
+dataset: ./data/spambase.data
+backhand: "numpy"
+k: 5

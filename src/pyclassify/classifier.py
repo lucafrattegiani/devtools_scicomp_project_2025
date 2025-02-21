@@ -1,14 +1,20 @@
-from pyclassify.utils import distance, majority_vote
+from pyclassify.utils import distance, majority_vote, distance_numpy, distance_numba
 from typing import List, Tuple
+from line_profiler import profile
+import numpy as np
 
 class kNN:
-    def __init__(self, k: int):
+    def __init__(self, k: int, backhand = "plain"):
         """
         Initializes the kNN classifier with a specified number of nearest neighbors.
         
         Args:
             k (int): The number of nearest neighbors to consider.
         """
+
+        #Check 'backhand':
+        if(backhand != "plain" and backhand != "numpy" and backhand != "numba"):
+            raise ValueError("backhand must be either 'plain', 'numpy' or 'numba'")
 
         # Check if k is an integer at runtime
         if not isinstance(k, int):
@@ -19,7 +25,16 @@ class kNN:
             raise ValueError("k must be a positive integer")
 
         self.k = k
+        self.backhand = backhand
 
+        if self.backhand == "plain":
+            self.distance = distance
+        if self.backhand == "numpy":
+            self.distance = distance_numpy
+        if self.backhand == "numba":
+            self.distance = distance_numba
+
+    @profile
     def _get_k_nearest_neighbors(self, X, y, x):
         """
         Finds the k nearest neighbors of the point x based on Euclidean distance.
@@ -34,7 +49,7 @@ class kNN:
         """
         distances = []
         for i in range(len(X)):
-            dist = distance(x, X[i])  # Use the distance function from utils.py
+            dist = self.distance(x, X[i])  # Use the distance function from utils.py
             distances.append((dist, y[i]))  # Store the distance and corresponding label
         
         distances.sort(key=lambda x: x[0])  # Sort by distance
@@ -42,6 +57,7 @@ class kNN:
         
         return k_nearest_neighbors
 
+    @profile
     def __call__(self, data: Tuple[List[List[float]], List[int]], new_points: List[List[float]]):
         """
         Classifies a list of new points by finding their k nearest neighbors and performing majority voting.
@@ -54,6 +70,11 @@ class kNN:
             list: A list of predicted class labels for each point in new_points.
         """
         X, y = data  # Unpack the feature matrix and labels
+
+        #Recast data type properly:
+        if not self.backhand == "plain":
+            X = np.array(X)
+            new_points = np.array(new_points)
         
         predictions = []  # To store the predicted classes for each new point
         

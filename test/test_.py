@@ -62,6 +62,13 @@ def test_knn_constructor():
     with pytest.raises(ValueError):
         kNN(0)  # k should be at least 1 for meaningful kNN operation
 
-test_distance()
-test_majority_vote()
-test_knn_constructor()
+    #Asserts on 'backhand' parameter:
+    model1 = kNN(k = 3, backhand = "plain")
+    assert model1.backhand == "plain"
+
+    model2 = kNN(k = 3, backhand = "numpy")
+    assert model2.backhand == "numpy"
+
+    #Test 'backhand': Value different from 'plain' and 'numpy'
+    with pytest.raises(ValueError):
+        kNN(k = 3, backhand = "prova")

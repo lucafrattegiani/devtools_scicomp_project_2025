@@ -1,0 +1,122 @@
+Timer unit: 1e-06 s
+
+Total time: 0.000176371 s
+File: /home/luca/devtools_scicomp/devtools_scicomp_project_2025/src/pyclassify/utils.py
+Function: majority_vote at line 23
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    23                                           @profile
+    24                                           def majority_vote(neighbors: List[int]):
+    25                                               """
+    26                                               Returns the majority class among all the labels that we find in the list passed as argument, which stores the labels of all the k-nearest neighbors.
+    27                                               """
+    28                                               #Dictionary of labels:
+    29        71          5.6      0.1      3.2      labels = {}
+    30                                           
+    31       426         34.2      0.1     19.4      for label in neighbors:
+    32       355         29.5      0.1     16.7          if label in labels:
+    33       277         31.9      0.1     18.1              labels[label] += 1
+    34                                                   else:
+    35        78         10.3      0.1      5.9              labels[label] = 1
+    36                                           
+    37                                               # Find the class label with the maximum count
+    38        71          6.3      0.1      3.6      majority_class = None
+    39        71          5.9      0.1      3.3      max_count = 0
+    40       149         25.7      0.2     14.6      for label, count in labels.items():
+    41        78          8.8      0.1      5.0          if count > max_count:
+    42        73          6.5      0.1      3.7              majority_class = label
+    43        73          6.1      0.1      3.4              max_count = count
+    44                                               
+    45        71          5.7      0.1      3.2      return majority_class
+
+Total time: 0.121228 s
+File: /home/luca/devtools_scicomp/devtools_scicomp_project_2025/src/pyclassify/utils.py
+Function: distance at line 6
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+     6                                           @profile
+     7                                           def distance(point1: List[float], point2: List[float]) -> float:
+     8                                               """
+     9                                               Computes the square of the Euclidean distance between two points.
+    10                                               
+    11                                               Args:
+    12                                                   point1 (List[float]): The first point.
+    13                                                   point2 (List[float]): The second point.
+    14                                               
+    15                                               Returns:
+    16                                                   float: The squared Euclidean distance between point1 and point2.
+    17                                               """
+    18     19880       2058.7      0.1      1.7      if len(point1) != len(point2):
+    19                                                   raise ValueError("Unmatching dimensions")
+    20                                               
+    21     19880     119169.2      6.0     98.3      return sum((p1 - p2) ** 2 for p1, p2 in zip(point1, point2))
+
+Total time: 0.149399 s
+File: /home/luca/devtools_scicomp/devtools_scicomp_project_2025/src/pyclassify/classifier.py
+Function: _get_k_nearest_neighbors at line 24
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    24                                               @profile
+    25                                               def _get_k_nearest_neighbors(self, X, y, x):
+    26                                                   """
+    27                                                   Finds the k nearest neighbors of the point x based on Euclidean distance.
+    28                                                   
+    29                                                   Args:
+    30                                                       X (list of lists): The dataset of points (features).
+    31                                                       y (list): The corresponding labels of the points in X.
+    32                                                       x (list): The new point to classify.
+    33                                                   
+    34                                                   Returns:
+    35                                                       list: A list of class labels of the k nearest neighbors of x.
+    36                                                   """
+    37        71          5.2      0.1      0.0          distances = []
+    38     19951       1506.6      0.1      1.0          for i in range(len(X)):
+    39     19880     142907.5      7.2     95.7              dist = distance(x, X[i])  # Use the distance function from utils.py
+    40     19880       2738.0      0.1      1.8              distances.append((dist, y[i]))  # Store the distance and corresponding label
+    41                                                   
+    42        71       2190.0     30.8      1.5          distances.sort(key=lambda x: x[0])  # Sort by distance
+    43        71         45.9      0.6      0.0          k_nearest_neighbors = [label for _, label in distances[:self.k]]
+    44                                                   
+    45        71          5.6      0.1      0.0          return k_nearest_neighbors
+
+Total time: 0.155653 s
+File: /home/luca/devtools_scicomp/devtools_scicomp_project_2025/src/pyclassify/classifier.py
+Function: __call__ at line 47
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    47                                               @profile
+    48                                               def __call__(self, data: Tuple[List[List[float]], List[int]], new_points: List[List[float]]):
+    49                                                   """
+    50                                                   Classifies a list of new points by finding their k nearest neighbors and performing majority voting.
+    51                                                   
+    52                                                   Args:
+    53                                                       data (tuple): A tuple containing the feature matrix (X) and the labels (y).
+    54                                                       new_points (list): A list of points to classify.
+    55                                                   
+    56                                                   Returns:
+    57                                                       list: A list of predicted class labels for each point in new_points.
+    58                                                   """
+    59         1          0.5      0.5      0.0          X, y = data  # Unpack the feature matrix and labels
+    60                                                   
+    61         1          0.2      0.2      0.0          predictions = []  # To store the predicted classes for each new point
+    62                                                   
+    63        72          5.7      0.1      0.0          for point in new_points:
+    64                                                       # Get the k nearest neighbors for the current point
+    65        71     155212.6   2186.1     99.7              neighbors = self._get_k_nearest_neighbors(X, y, point)
+    66                                                       
+    67                                                       # Perform majority voting to get the predicted class
+    68        71        423.3      6.0      0.3              predicted_class = majority_vote(neighbors)
+    69                                                       
+    70                                                       # Store the predicted class for the current point
+    71        71         10.5      0.1      0.0              predictions.append(predicted_class)
+    72                                                   
+    73         1          0.1      0.1      0.0          return predictions
+
+  0.00 seconds - /home/luca/devtools_scicomp/devtools_scicomp_project_2025/src/pyclassify/utils.py:23 - majority_vote
+  0.12 seconds - /home/luca/devtools_scicomp/devtools_scicomp_project_2025/src/pyclassify/utils.py:6 - distance
+  0.15 seconds - /home/luca/devtools_scicomp/devtools_scicomp_project_2025/src/pyclassify/classifier.py:24 - _get_k_nearest_neighbors
+  0.16 seconds - /home/luca/devtools_scicomp/devtools_scicomp_project_2025/src/pyclassify/classifier.py:47 - __call__
