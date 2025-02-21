@@ -1,7 +1,10 @@
 from typing import List
 import os
 import yaml
+from line_profiler import profile
+import numpy as np
 
+@profile
 def distance(point1: List[float], point2: List[float]) -> float:
     """
     Computes the square of the Euclidean distance between two points.
@@ -18,6 +21,7 @@ def distance(point1: List[float], point2: List[float]) -> float:
     
     return sum((p1 - p2) ** 2 for p1, p2 in zip(point1, point2))
 
+@profile
 def majority_vote(neighbors: List[int]):
     """
     Returns the majority class among all the labels that we find in the list passed as argument, which stores the labels of all the k-nearest neighbors.
@@ -41,6 +45,27 @@ def majority_vote(neighbors: List[int]):
     
     return majority_class
 
+@profile
+def distance_numpy(point1, point2) -> float:
+    """
+    Computes the square of the Euclidean distance between two points.
+    
+    Args:
+        point1 (List[float]): The first point.
+        point2 (List[float]): The second point.
+    
+    Returns:
+        float: The squared Euclidean distance between point1 and point2.
+    """
+    if len(point1) != len(point2):
+        raise ValueError("Unmatching dimensions")
+    
+    if not isinstance(point1, np.ndarray) and not isinstance(point2, np.ndarray):
+        raise TypeError("You should pass a numpy array")
+    
+    dist = np.sum((point1 - point2)**2)
+    return dist
+
 def read_config(file):
     filepath = os.path.abspath(f'{file}.yaml')
     with open(filepath, 'r') as stream:
@@ -48,7 +73,7 @@ def read_config(file):
     return kwargs
 
 def convert(x):
-    if x == "g":
+    if x == "g"or x == "1":
         x = 1
     else:
         x = 0

@@ -2,8 +2,9 @@ from pyclassify.classifier import kNN
 from pyclassify.utils import read_config, read_file
 import os
 import argparse
+import random
 
-def split_dataset(X, y, train_percent=0.8):
+def split_dataset(X, y, train_percent=0.8, shuffle = True):
     """
     Split the dataset into training and testing sets based on the given percentage.
     Args:
@@ -13,6 +14,17 @@ def split_dataset(X, y, train_percent=0.8):
     Returns:
         tuple: (X_train, y_train, X_test, y_test)
     """
+
+    #Data shuffling:    
+    if shuffle:
+        # Combine X and y into a single list of tuples (X, y) for easier shuffling
+        data = list(zip(X, y))
+
+        random.shuffle(data)
+    
+        # Unzip the shuffled dataset back in
+        X[:], y[:] = zip(*data)
+
     # Calculate the number of training samples
     split_index = int(len(X) * train_percent)
     
@@ -49,6 +61,7 @@ def main():
     config = read_config(config_path)  # path to config.yaml
     k = config.get('k', 5)  # Number of neighbors (default is 5)
     dataset_path = config.get('dataset', './data/ionosphere.data')  # Path to dataset
+    backhand = config.get("backhand")
 
     # Step 2: Load the dataset
     X, y = read_file(dataset_path)
@@ -57,7 +70,7 @@ def main():
     X_train, y_train, X_test, y_test = split_dataset(X, y)
 
     # Step 4: Initialize the kNN classifier with k from the config
-    model = kNN(k=k)
+    model = kNN(k=k, backhand=backhand)
 
     # Step 5: Perform classification on the test set
     predictions = model(data=(X_train, y_train), new_points=X_test)
@@ -65,6 +78,7 @@ def main():
     # Step 6: Compute accuracy
     accuracy = compute_accuracy(predictions, y_test)
     print(f"Accuracy: {accuracy:.2f}%")
+    print("K: " + str(k))
 
     # Step 7: Add, commit, and push changes to Git with message "practical2"
     # os.system("git add .")
