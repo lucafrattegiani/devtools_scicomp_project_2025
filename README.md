@@ -26,7 +26,7 @@ Regarding the test loss, here I show values obtained for different mesh sizes:
 ## Environment setting and data importation
 
 ### Training on GPU
-To set up a correct environment for the package the following actions from terminal are required:
+Assuming you have Linux as OS, to set up a correct environment for the package the following actions from terminal are required:
 
 ```bash
 # Create and activate env
@@ -47,7 +47,7 @@ python -m pip install torch torchvision --index-url https://download.pytorch.org
 ```
 
 ### Download and preprocess data
-From the root of the cloned repository run that command from terminal in order to download -> preprocess data and put them in the ```bash data/``` directory:
+From the root of the cloned repository run that command from terminal in order to download -> preprocess data and put them in the ```data/``` directory:
 
 ```bash
 sh shell/download.sh
