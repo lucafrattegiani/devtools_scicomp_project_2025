@@ -16,7 +16,7 @@ Models have been trained following as much as possible the hyperparameterization
 
 Below is reported the training loss evolution over epochs for two training procedures having identical mesh sizes but the first one doesn't include SDF information while the second one uses the $R = 32$ resolution:
 
-<img src="plots/train/0/train_0_3000.png" width="420" alt="Left"> <img src="plots/train/32/train_32_3000.png" width="420" alt="Right">
+<img src="plots/train/0/train_0_3000.png" width="400" alt="Left"> <img src="plots/train/32/train_32_3000.png" width="400" alt="Right">
 
 
 Regarding the test loss, here I show values obtained for different mesh sizes:
@@ -32,14 +32,23 @@ To set up a correct environment for the package the following actions from termi
 # Create and activate env
 conda env create -name myenv python=3.11
 conda activate myenv
-'''
+```
 
 Then from the project root, after having cloned the repository one has to run:
-'''bash
+
+```bash
 python -m pip install -r requirements.txt
-'''
+```
 
 If one wants to use GPU to run the model, the correct version of PyTorch has to be installed, so the following command in addition is required:
-'''bash
+
+```bash
 python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
-'''
+```
+
+### Download and preprocess data
+From the root of the cloned repository run that command from terminal in order to download -> preprocess data and put them in the ```bash data/``` directory:
+
+```bash
+sh shell/download.sh
+``` 
