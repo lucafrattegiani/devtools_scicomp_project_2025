@@ -2,9 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Folders
 data/
 experiments/
 scripts/
+
 # C extensions
 *.so
 
