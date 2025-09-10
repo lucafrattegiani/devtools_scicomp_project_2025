@@ -5,8 +5,8 @@ __pycache__/
 
 # Folders
 data/
-experiments/
 scripts/
+experiments/
 
 # C extensions
 *.so
