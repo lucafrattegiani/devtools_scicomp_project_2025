@@ -1,21 +1,21 @@
-# Choosing a build backend:
-requires = ["setuptools"]
+[build-system]
+requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "pyclassify"
+name = "upt"
 version = "0.0.1"
 description = "Directory for the Development tools for scientific computing exam project"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [{ name = "lucafrattegiani", email = "lfratteg@sissa.it" }]
-dynamic = ["dependencies"]
+dynamic = ["requirements.txt"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
-exclude = ["scripts", "tests", "shell", "experiments"]
+exclude = ["scripts", "test", "shell", "experiments", "runs", "yamls", "logs", "losses", "plots", "data"]
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }

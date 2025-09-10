@@ -1,0 +1,70 @@
+experiment_name: shapenetcar
+output_dir: runs
+loss_dir: losses
+device: cuda
+
+data:
+  root_dir: ../data
+  res: 0
+  size: 3000
+  seed: 42
+  sd: true
+  test_indices: [550, 592, 229, 547, 62, 464, 798, 836, 5, 732, 876, 843, 367, 496,
+        142, 87, 88, 101, 303, 352, 517, 8, 462, 123, 348, 714, 384, 190,
+        505, 349, 174, 805, 156, 417, 764, 788, 645, 108, 829, 227, 555, 412,
+        854, 21, 55, 210, 188, 274, 646, 320, 4, 344, 525, 118, 385, 669,
+        113, 387, 222, 786, 515, 407, 14, 821, 239, 773, 474, 725, 620, 401,
+        546, 512, 837, 353, 537, 770, 41, 81, 664, 699, 373, 632, 411, 212,
+        678, 528, 120, 644, 500, 767, 790, 16, 316, 259, 134, 531, 479, 356,
+        641, 98, 294, 96, 318, 808, 663, 447, 445, 758, 656, 177, 734, 623,
+        216, 189, 133, 427, 745, 72, 257, 73, 341, 584, 346, 840, 182, 333,
+        218, 602, 99, 140, 809, 878, 658, 779, 65, 708, 84, 653, 542, 111,
+        129, 676, 163, 203, 250, 209, 11, 508, 671, 628, 112, 317, 114, 15,
+        723, 746, 765, 720, 828, 662, 665, 399, 162, 495, 135, 121, 181, 615,
+        518, 749, 155, 363, 195, 551, 650, 877, 116, 38, 338, 849, 334, 109,
+        580, 523, 631, 713, 607, 651, 168]
+
+model:
+  convnext:
+    patch_size: 2
+    dims: [256, 768]
+    depths: [2, 2]
+    kernel_size: 3
+    grn: true
+    drop_path_rate: 0.0
+    drop_path_decay: false
+    add_type_token: false
+  mesh:
+    pos_embed:
+      hidden_dim: 256
+      include_raw: false
+      upper: 200.0
+    perceiver:
+      num_tokens: 64
+      num_heads: 6
+      init_weights: truncnormal
+  approximator:
+    depth: 4
+    num_heads: 6
+    drop_path_rate: 0.0
+    drop_path_decay: false
+    init_weights: truncnormal
+    init_last_proj_zero: false
+  decoder:
+    num_heads: 6
+    ffn_ratio: 4
+    dropout: 0.0
+    query_in_dim: 3
+    use_query_mlp: true
+    query_mlp_ratio: 4
+
+optimizer:
+  name: adamw
+  lr: 5.0e-4
+  momentum: 0.9
+
+training:
+  epochs: 100
+  batch_size: 32
+  num_workers: 0
+  pin_memory: false

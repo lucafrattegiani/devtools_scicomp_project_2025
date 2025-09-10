@@ -1,0 +1,284 @@
+Timer unit: 1e-06 s
+
+Total time: 12.8781 s
+File: /u/l/lfratteg/upt_project/models/approximator.py
+Function: Approximator.forward at line 76
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    76                                               @profile
+    77                                               def forward(self, x: torch.Tensor) -> torch.Tensor:
+    78                                                   r"""
+    79                                                   Apply the Transformer stack.
+    80                                           
+    81                                                   Parameters
+    82                                                   ----------
+    83                                                   x : torch.Tensor
+    84                                                       Input tokens of shape ``(B, N, dim)``.
+    85                                           
+    86                                                   Returns
+    87                                                   -------
+    88                                                   torch.Tensor
+    89                                                       Output tokens of shape ``(B, N, dim)``.
+    90                                           
+    91                                                   Raises
+    92                                                   ------
+    93                                                   AssertionError
+    94                                                       If ``x`` is not rank-3.
+    95                                                   """
+    96      2200       2467.4      1.1      0.0          assert x.ndim == 3, f"expected (B, N, dim), got {tuple(x.shape)}"
+    97     28600      36519.6      1.3      0.3          for blk in self.blocks:
+    98     26400   12838475.5    486.3     99.7              x = blk(x)
+    99      2200        629.0      0.3      0.0          return x
+
+Total time: 2.54362 s
+File: /u/l/lfratteg/upt_project/models/decoder.py
+Function: PerceiverDecoder.forward at line 120
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   120                                               @profile
+   121                                               def forward(self, latent: torch.Tensor, queries: torch.Tensor) -> torch.Tensor:
+   122                                                   r"""
+   123                                                   Project queries to ``H``, run cross-attention with latent as K/V, refine with FFN, and map to scalars.
+   124                                           
+   125                                                   Parameters
+   126                                                   ----------
+   127                                                   latent : torch.Tensor
+   128                                                       Latent tokens of shape ``(B, T, H)``.
+   129                                                   queries : torch.Tensor
+   130                                                       Embedded query tokens of shape ``(B, K, H_q)``.
+   131                                           
+   132                                                   Returns
+   133                                                   -------
+   134                                                   torch.Tensor
+   135                                                       Scalar predictions per query: ``(B, K, 1)``.
+   136                                                   """
+   137      2200       2915.2      1.3      0.1          assert latent.ndim == 3 and queries.ndim == 3, "expected (B,T,H) and (B,K,H_q)"
+   138      2200       3063.5      1.4      0.1          B, T, H_lat = latent.shape
+   139      2200       1098.4      0.5      0.0          Bq, K, H_q = queries.shape
+   140      2200        776.7      0.4      0.0          assert B == Bq, "batch size mismatch between latent and queries"
+   141      2200       1392.9      0.6      0.1          assert H_lat == self.dim, f"latent width mismatch: got {H_lat}, expected {self.dim}"
+   142                                           
+   143                                                   # 1) Project queries to model width H
+   144      2200     316267.6    143.8     12.4          q = self.query_proj(queries)                # (B, K, H)
+   145                                           
+   146                                                   # 2) Cross-attention: Q attends to latent K=V
+   147      2200      87308.1     39.7      3.4          qn = self.q_norm(q)
+   148      2200      69257.0     31.5      2.7          kv = self.kv_norm(latent)
+   149      2200     900321.3    409.2     35.4          attn_out, _ = self.attn(qn, kv, kv, need_weights=False)   # (B, K, H)
+   150      2200      92446.6     42.0      3.6          x = q + self.drop(attn_out)                               # residual
+   151                                           
+   152                                                   # 3) Feed-forward on the query pathway
+   153      2200     412281.1    187.4     16.2          y = self.ffn(self.ffn_norm(x))
+   154      2200      31894.3     14.5      1.3          x = x + y                                                 # residual
+   155                                           
+   156                                                   # 4) Pointwise projection to scalar pressure
+   157      2200     623824.6    283.6     24.5          out = self.head(x)                                        # (B, K, 1)
+   158      2200        773.7      0.4      0.0          return out
+
+Total time: 0.668982 s
+File: /u/l/lfratteg/upt_project/models/encoder.py
+Function: PositionalEmbedding.forward at line 112
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   112                                               @profile
+   113                                               def forward(self, positions: torch.Tensor) -> torch.Tensor:
+   114                                                   r"""
+   115                                                   Embed rescaled 3D positions.
+   116                                           
+   117                                           
+   118                                                   Parameters
+   119                                                   ----------
+   120                                                   positions : torch.Tensor
+   121                                                   Coordinates with shape ``(B, K, 3)`` or ``(K, 3)``.
+   122                                           
+   123                                           
+   124                                                   Returns
+   125                                                   -------
+   126                                                   torch.Tensor
+   127                                                   Positional embeddings of shape ``(B, K, H)``.
+   128                                                   """
+   129                                                   # Adjust dimensions if one sample only is provided
+   130      2200       3131.1      1.4      0.5          if positions.dim() == 2:  # (K,3) -> (1,K,3)
+   131                                                       positions = positions.unsqueeze(0)
+   132                                                   
+   133                                                   # Rescale
+   134      2200     297043.5    135.0     44.4          x = self.rescale(positions, hi=self.upper, eps=self.eps)
+   135                                           
+   136                                                   # Apply positional encoding
+   137      2200     368807.3    167.6     55.1          return self.pe(x)  # Expect (B, K, H)
+
+Total time: 1.60816 s
+File: /u/l/lfratteg/upt_project/models/encoder.py
+Function: PerceiverEncoder.forward at line 202
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   202                                               @profile
+   203                                               def forward(self, tokens: torch.Tensor) -> torch.Tensor:
+   204                                                   r"""
+   205                                                   Apply one Perceiver pooling step.
+   206                                           
+   207                                           
+   208                                                   Parameters
+   209                                                   ----------
+   210                                                   tokens : torch.Tensor
+   211                                                   Input token set of shape ``(B, K, H)``.
+   212                                           
+   213                                           
+   214                                                   Returns
+   215                                                   -------
+   216                                                   torch.Tensor
+   217                                                   Latent/query tokens of shape ``(B, L, H)``.
+   218                                                   """
+   219                                           
+   220                                                   # Assert valid input dimensions
+   221      2200       1905.3      0.9      0.1          assert tokens.ndim == 3, f"expected (B,K,H), got {tuple(tokens.shape)}"
+   222      2200       1902.5      0.9      0.1          B, K, H = tokens.shape
+   223      2200       1034.8      0.5      0.1          assert H == self.dim, f"hidden_dim mismatch: tokens H={H}, expected {self.dim}"
+   224                                           
+   225                                                   # Single Perceiver pooling step
+   226      2200    1561371.3    709.7     97.1          Z = self.block(kv=tokens)   # Shape (B, L, H)
+   227                                           
+   228                                                   # Add grid type embedding
+   229      2200       7538.2      3.4      0.5          if self.type_token is not None:
+   230      2200      33694.3     15.3      2.1              Z = Z + self.type_token
+   231                                           
+   232      2200        712.4      0.3      0.0          return Z
+
+Total time: 0 s
+File: /u/l/lfratteg/upt_project/models/encoder.py
+Function: ConvNeXtEncoder.forward at line 346
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   346                                               @profile
+   347                                               def forward(self, sdf: torch.Tensor) -> torch.Tensor:
+   348                                                   r"""
+   349                                                   Encode an SDF grid into grid tokens.
+   350                                           
+   351                                           
+   352                                                   Parameters
+   353                                                   ----------
+   354                                                   sdf : torch.Tensor
+   355                                                   SDF values with shape ``(B, R, R, R)`` where ``R == resolution``.
+   356                                           
+   357                                           
+   358                                                   Returns
+   359                                                   -------
+   360                                                   torch.Tensor
+   361                                                   Grid tokens of shape ``(B, T, H)``.
+   362                                                   """
+   363                                                   # Validate shape and resolution
+   364                                                   assert sdf.ndim == 4, f"expected (B,R,R,R), got {tuple(sdf.shape)}"
+   365                                                   B, Rx, Ry, Rz = sdf.shape
+   366                                                   assert Rx == Ry == Rz == self.resolution, (
+   367                                                       f"expected cubic grid with side={self.resolution}, got {(Rx, Ry, Rz)}"
+   368                                                   )
+   369                                           
+   370                                                   # 1) Add channel axis for 3D convs (channels-first)  
+   371                                                   x = sdf.unsqueeze(1)                                   # (B, 1, R, R, R)
+   372                                           
+   373                                                   # 2) Apply ConvNeXt-v2
+   374                                                   x = self.model(x)                                      # (B, H, S, S, S), S=self.out_side
+   375                                           
+   376                                                   # 3) Flatten spatial grid into tokens
+   377                                                   tokens = einops.rearrange(x, "b c d h w -> b (d h w) c")  # (B, T, H), T = S*S*S
+   378                                           
+   379                                                   # 4) Add grid type embedding (broadcast add)
+   380                                                   if self.type_token is not None:
+   381                                                       tokens = tokens + self.type_token                   # (B, T, H)
+   382                                           
+   383                                                   return tokens
+
+Total time: 0 s
+File: /u/l/lfratteg/upt_project/models/model.py
+Function: UPTSDF.forward at line 118
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   118                                               @profile
+   119                                               def forward(self, mesh_pos: torch.Tensor, sdf: torch.Tensor) -> torch.Tensor:
+   120                                                   # Mesh branch: pos-embed (B,P,H) → Perceiver (B,Lm,H)
+   121                                                   q_mesh = self.mesh_pos_emb(mesh_pos)            # (B,P,H)
+   122                                                   mesh_tokens = self.mesh_perceiver(q_mesh)       # (B,Lm,H)
+   123                                           
+   124                                                   # Grid branch: ConvNeXt → (B,Ls,H)
+   125                                                   sdf_tokens = self.grid(sdf)                     # (B,Ls,H)
+   126                                           
+   127                                                   # Concat and process
+   128                                                   tokens = torch.cat([mesh_tokens, sdf_tokens], dim=1)  # (B,Lm+Ls,H)
+   129                                                   latent = self.approximator(tokens)                    # (B,Lm+Ls,H)
+   130                                           
+   131                                                   # Decode to per-vertex pressures (queries = raw xyz)
+   132                                                   pred = self.decoder(latent, mesh_pos)                 # (B,P,1)
+   133                                                   return pred.squeeze(-1)                               # (B,P)
+
+Total time: 17.958 s
+File: /u/l/lfratteg/upt_project/models/model.py
+Function: UPT.forward at line 216
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   216                                               @profile
+   217                                               def forward(self, mesh_pos: torch.Tensor) -> torch.Tensor:
+   218                                                   # Mesh branch: pos-embed (B,P,H) → Perceiver (B,Lm,H)
+   219      2200     718255.9    326.5      4.0          q_mesh = self.mesh_pos_emb(mesh_pos)            # (B,P,H)
+   220      2200    1656104.7    752.8      9.2          tokens = self.mesh_perceiver(q_mesh)       # (B,Lm,H)
+   221                                           
+   222                                                   # Concat and process
+   223      2200   12957490.6   5889.8     72.2          latent = self.approximator(tokens)                    # (B,Lm+Ls,H)
+   224                                           
+   225                                                   # Decode to per-vertex pressures (queries = raw xyz)
+   226      2200    2612071.5   1187.3     14.5          pred = self.decoder(latent, mesh_pos)                 # (B,P,1)
+   227      2200      14088.2      6.4      0.1          return pred.squeeze(-1)                               # (B,P)
+
+Total time: 0.389858 s
+File: /u/l/lfratteg/upt_project/utils/loader.py
+Function: ShapeNetCarDataset.__getitem__ at line 125
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   125                                               @profile
+   126                                               def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+   127     70000     389857.6      5.6    100.0          return self.mesh[idx], self.pressure[idx], self.sdf[idx]
+
+Total time: 0.0584242 s
+File: /u/l/lfratteg/upt_project/utils/utils.py
+Function: load_config at line 17
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    17                                           @profile
+    18                                           def load_config(path: PathLike) -> Dict[str, Any]:
+    19                                               """Load a YAML config file into a Python dict (top-level must be a mapping)."""
+    20         1        168.9    168.9      0.3      p = Path(path)
+    21         1         71.8     71.8      0.1      if not p.exists():
+    22                                                   raise FileNotFoundError(f"Config not found: {p}")
+    23         2       1433.3    716.7      2.5      with p.open("r") as f:
+    24         1      56744.7  56744.7     97.1          cfg = yaml.safe_load(f)
+    25         1          1.3      1.3      0.0      if cfg is None:
+    26                                                   return {}
+    27         1          3.0      3.0      0.0      if not isinstance(cfg, dict):
+    28                                                   raise ValueError("Top-level YAML must be a mapping (key: value).")
+    29         1          1.0      1.0      0.0      return cfg
+
+Total time: 0.000715859 s
+File: /u/l/lfratteg/upt_project/utils/utils.py
+Function: resolve_path at line 31
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    31                                           @profile
+    32                                           def resolve_path(p: PathLike | None, base_dir: Path) -> Path | None:
+    33                                               """
+    34                                               Expand ~ and $VARS; if relative, resolve relative to base_dir.
+    35                                               Returns None if input is None.
+    36                                               """
+    37         1          1.4      1.4      0.2      if p is None:
+    38                                                   return None
+    39         1         73.7     73.7     10.3      q = Path(os.path.expandvars(os.path.expanduser(str(p))))
+    40         1        640.8    640.8     89.5      return q if q.is_absolute() else (base_dir / q).resolve()
+
