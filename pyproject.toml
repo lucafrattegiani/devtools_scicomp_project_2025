@@ -15,7 +15,7 @@ dynamic = ["requirements.txt"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
-exclude = ["scripts", "test", "shell", "experiments", "runs", "yamls", "logs", "losses", "plots", "data"]
+exclude = ["scripts", "test", "shell", "experiments", "runs", "yamls", "logs", "losses", "plots", "data", "preprocess"]
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
