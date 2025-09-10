@@ -21,7 +21,7 @@ Below is reported the training loss evolution over epochs for two training proce
 
 Regarding the test loss, here I show values obtained for different mesh sizes:
 
-<img src="plots/test/test_0.png" width="420" alt="Left">
+![Results](plots/test/test_0.png)
 
 ## Environment setting and data importation
 
@@ -30,7 +30,7 @@ To set up a correct environment for the package the following actions from termi
 
 ```bash
 # Create and activate env
-conda env create -name myenv python=3.11
+conda create --name myenv python=3.11
 conda activate myenv
 ```
 
