@@ -30,5 +30,16 @@ To set up a correct environment for the package the following actions from termi
 
 ```bash
 # Create and activate env
-conda env create -f environment_linux.yml -n upt
-conda activate upt
+conda env create -name myenv python=3.11
+conda activate myenv
+'''
+
+Then from the project root, after having cloned the repository one has to run:
+'''bash
+python -m pip install -r requirements.txt
+'''
+
+If one wants to use GPU to run the model, the correct version of PyTorch has to be installed, so the following command in addition is required:
+'''bash
+python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+'''
