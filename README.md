@@ -28,5 +28,7 @@ Regarding the test loss, here I show values obtained for different mesh sizes:
 ### Training on GPU
 To set up a correct environment for the package the following actions from terminal are required:
 
-> [!TIP]
-> Run the following in a terminal (Linux/macOS). Lines starting with `#` are comments.
+```bash
+# Create and activate env
+conda env create -f environment_linux.yml -n upt
+conda activate upt
