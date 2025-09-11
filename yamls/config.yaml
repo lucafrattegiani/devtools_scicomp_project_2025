@@ -1,5 +1,5 @@
 experiment_name: shapenetcar
-output_dir: runs
+output_dir: weights
 loss_dir: losses
 device: cuda
 
