@@ -31,7 +31,7 @@ jobs:
     - name: Run tests
       run: |
         pytest
-
+        pip install -e .
     - name: Deactivate environment
       run: |
 
