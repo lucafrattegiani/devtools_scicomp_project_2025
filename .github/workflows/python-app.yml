@@ -21,9 +21,8 @@ jobs:
 
     - name: Set up Python environment
       run: |
-        conda create --name test_env python=3.11
-        conda activate test_env
-
+        python3.11 -m venv .venv311
+        source .venv311/bin/activate
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
@@ -36,6 +35,5 @@ jobs:
 
     - name: Deactivate environment
       run: |
-        conda deactivate
 
       
