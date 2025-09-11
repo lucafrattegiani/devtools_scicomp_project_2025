@@ -30,7 +30,6 @@ jobs:
 
     - name: Run tests
       run: |
-        conda activate test_env
         pytest
 
     - name: Deactivate environment
