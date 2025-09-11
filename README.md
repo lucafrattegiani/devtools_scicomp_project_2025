@@ -21,7 +21,7 @@ Below is reported the training loss evolution over epochs for two training proce
 
 Regarding the test loss, here I show values obtained for different mesh sizes:
 
-![Results](plots/test/test_0.png)
+<img src="plots/test/test_0.png" width="400" alt="Left"> <img src="plots/test/test_32.png" width="400" alt="Right">
 
 ## Environment setting and data importation
 
