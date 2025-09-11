@@ -16,7 +16,7 @@ Models have been trained following as much as possible the hyperparameterization
 
 Below is reported the training loss evolution over epochs for two training procedures having identical mesh sizes but the first one doesn't include SDF information while the second one uses the $R = 32$ resolution:
 
-<img src="plots/train/0/train_0_3000.png" width="400" alt="Left"> <img src="plots/train/32/train_32_3000.png" width="400" alt="Right">
+<img src="plots/train/0/train_0_2500.png" width="400" alt="Left"> <img src="plots/train/32/train_32_2500.png" width="400" alt="Right">
 
 
 Regarding the test loss, here I show values obtained for different mesh sizes:
