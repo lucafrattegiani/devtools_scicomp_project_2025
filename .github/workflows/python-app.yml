@@ -6,36 +6,36 @@ on:
   pull_request:
     branches: [ main ]
 
-  jobs:
-    test:
-      runs-on: ubuntu-latest
+jobs:
+  test:
+    runs-on: ubuntu-latest
 
-      steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
 
-      - name: Set up Python environment
-        run: |
-          conda create --name test_env python=3.11
-          conda activate test_env
+    - name: Set up Python environment
+      run: |
+        conda create --name test_env python=3.11
+        conda activate test_env
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install pytest
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pytest
 
-      - name: Run tests
-        run: |
-          conda activate test_env
-          pytest
+    - name: Run tests
+      run: |
+        conda activate test_env
+        pytest
 
-      - name: Deactivate environment
-        run: |
-          conda deactivate
+    - name: Deactivate environment
+      run: |
+        conda deactivate
 
       
